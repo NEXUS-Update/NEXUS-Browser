@@ -1,6 +1,6 @@
 # ⬡ NEXUS Browser
 ### The Gamer's Dream Browser — Built with Electron
-
+(Note, **this is for setting it up manually** please go to my "NEXUS" repository for the **exe** file)
 ---
 
 ## ⚡ Quick Start
