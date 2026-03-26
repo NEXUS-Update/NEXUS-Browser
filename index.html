@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS Browser</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     PASSWORD LOCK OVERLAY
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="lock-overlay">
+  <div class="lock-bg-grid"></div>
+  <div class="lock-box">
+    <div class="lock-hex">⬡</div>
+    <h1 class="lock-brand">NEXUS</h1>
+    <p class="lock-sub" id="lock-sub">SECURE ACCESS</p>
+    <div class="lock-input-wrap">
+      <input type="password" id="lock-input" class="lock-input" placeholder="Enter password..." autocomplete="off">
+      <div class="lock-input-bar"></div>
+    </div>
+    <div id="lock-error" class="lock-error hidden">⚠ INCORRECT PASSWORD</div>
+    <button id="lock-btn" class="lock-btn">AUTHENTICATE</button>
+    <p class="lock-hint" id="lock-hint"></p>
+  </div>
+  <div class="lock-scanlines"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TITLE BAR
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="titlebar">
+  <div class="titlebar-brand">
+    <span class="tb-hex">⬡</span>
+    <span class="tb-name">NEXUS</span>
+  </div>
+  <div class="titlebar-drag"></div>
+  <div class="titlebar-controls">
+    <button class="tb-ctrl minimize" id="btn-minimize" title="Minimize">─</button>
+    <button class="tb-ctrl maximize" id="btn-maximize" title="Maximize">▢</button>
+    <button class="tb-ctrl close"    id="btn-close"    title="Close">✕</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TAB BAR
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="tabbar">
+  <div id="tabs-scroll">
+    <div id="tabs-container"></div>
+  </div>
+  <button id="btn-new-tab" class="new-tab-btn" title="New Tab (Ctrl+T)">＋</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     NAVIGATION BAR
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="navbar">
+  <div class="nav-controls">
+    <button id="btn-back"    class="nav-btn" title="Back (Alt+←)">◂</button>
+    <button id="btn-forward" class="nav-btn" title="Forward (Alt+→)">▸</button>
+    <button id="btn-reload"  class="nav-btn" title="Reload (F5)">↺</button>
+    <button id="btn-home"    class="nav-btn" title="Home">⌂</button>
+  </div>
+
+  <div id="urlbar-wrap">
+    <span id="security-icon" class="sec-icon">🔒</span>
+    <input type="text" id="urlbar" placeholder="Search or enter address…" autocomplete="off" spellcheck="false">
+    <span id="zoom-badge" class="zoom-badge hidden">100%</span>
+    <div id="loading-bar" class="hidden"></div>
+  </div>
+
+  <div class="nav-actions">
+    <button id="btn-bookmark"  class="nav-btn action-btn" title="Bookmark Page (Ctrl+D)">☆</button>
+    <button id="btn-find"      class="nav-btn action-btn" title="Find in Page (Ctrl+F)">🔍</button>
+    <button id="btn-clipboard" class="nav-btn action-btn" title="Clipboard Panel (Ctrl+J)">📋</button>
+    <button id="btn-passwords" class="nav-btn action-btn" title="Password Manager 🔒">🔑</button>
+    <button id="btn-downloads" class="nav-btn action-btn" title="Downloads (Ctrl+Shift+J)">📥</button>
+    <button id="btn-gaming"    class="nav-btn action-btn" title="Gaming Hub">🎮</button>
+    <button id="btn-history"   class="nav-btn action-btn" title="History 🔒 (Ctrl+H)">⏱</button>
+    <button id="btn-adblock"   class="nav-btn action-btn adblock-on" title="Ad Blocker">🛡</button>
+    <button id="btn-devtools"  class="nav-btn action-btn" title="Dev Tools (F12)">⚙</button>
+    <button id="btn-settings"  class="nav-btn action-btn" title="Settings 🔒">≡</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FIND BAR  (Ctrl+F)
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="find-bar" class="hidden">
+  <span class="find-icon">🔍</span>
+  <input type="text" id="find-input" placeholder="Find in page…" autocomplete="off" spellcheck="false">
+  <span id="find-count" class="find-count"></span>
+  <button id="find-prev"  class="find-btn" title="Previous (Shift+Enter)">▲</button>
+  <button id="find-next"  class="find-btn" title="Next (Enter)">▼</button>
+  <button id="find-close" class="find-btn find-close-btn" title="Close (Escape)">✕</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="main-content">
+  <!-- Webview Area -->
+  <div id="webview-container"></div>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="hidden">
+    <div id="sidebar-header">
+      <span id="sidebar-title">PANEL</span>
+      <button id="sidebar-close">✕</button>
+    </div>
+
+    <!-- ── Bookmarks Panel ── -->
+    <div id="panel-bookmarks" class="panel hidden">
+      <div class="panel-search-wrap">
+        <input type="text" id="bookmark-search" placeholder="Search bookmarks…">
+      </div>
+      <div class="panel-toolbar">
+        <label class="import-btn" title="Import bookmarks from Chrome/Firefox HTML export">
+          📂 Import HTML
+          <input type="file" id="bookmark-import-input" accept=".html,.htm" class="hidden">
+        </label>
+      </div>
+      <div id="bookmarks-list" class="panel-list"></div>
+      <div class="panel-empty hidden" id="bookmarks-empty">No bookmarks yet.<br>Press ☆ to add one.</div>
+    </div>
+
+    <!-- ── History Panel ── -->
+    <div id="panel-history" class="panel hidden">
+      <div class="panel-actions-row">
+        <input type="text" id="history-search" placeholder="Search history…">
+        <button id="btn-clear-history" class="danger-btn">Clear All</button>
+      </div>
+      <div id="history-list" class="panel-list"></div>
+      <div class="panel-empty hidden" id="history-empty">No history yet.</div>
+    </div>
+
+    <!-- ── Clipboard Panel ── -->
+    <div id="panel-clipboard" class="panel hidden">
+      <div class="clipboard-header-row">
+        <span class="panel-label">CLIPBOARD CONTENTS</span>
+        <button id="btn-refresh-clipboard" class="icon-btn" title="Refresh">↺</button>
+      </div>
+      <div id="clipboard-text-box" class="clipboard-content-box hidden">
+        <div class="clip-label">TEXT</div>
+        <pre id="clipboard-text-preview"></pre>
+        <button id="clip-goto-btn" class="clip-action-btn hidden">→ Navigate to URL</button>
+        <button id="clip-search-btn" class="clip-action-btn">🔍 Search this text</button>
+      </div>
+      <div id="clipboard-img-box" class="clipboard-content-box hidden">
+        <div class="clip-label">IMAGE</div>
+        <img id="clipboard-img-preview" alt="clipboard image">
+      </div>
+      <div id="clipboard-empty" class="panel-empty">Clipboard is empty.<br>Click ↺ to refresh.</div>
+    </div>
+
+    <!-- ── Password Manager Panel ── -->
+    <div id="panel-passwords" class="panel hidden">
+      <div class="panel-actions-row">
+        <input type="text" id="password-search" placeholder="Search credentials…">
+        <label class="import-btn" title="Import Chrome/Firefox CSV export">
+          📥 Import CSV
+          <input type="file" id="passwords-file-input" accept=".csv" class="hidden">
+        </label>
+      </div>
+      <div class="panel-notice">🔒 Protected by app password. All data stored locally.</div>
+      <div id="passwords-list" class="panel-list"></div>
+      <div class="panel-empty hidden" id="passwords-empty">
+        No saved credentials.<br><br>
+        Export passwords from Chrome:<br>
+        Settings → Passwords → ⋮ → Export
+      </div>
+    </div>
+
+    <!-- ── Downloads Panel ── -->
+    <div id="panel-downloads" class="panel hidden">
+      <div class="panel-actions-row">
+        <span class="panel-label">DOWNLOADS</span>
+        <button id="btn-clear-downloads" class="danger-btn">Clear All</button>
+      </div>
+      <div id="downloads-list" class="panel-list"></div>
+      <div class="panel-empty hidden" id="downloads-empty">No downloads yet.<br>Files you download will appear here.</div>
+    </div>
+
+    <!-- ── Gaming Hub ── -->
+    <div id="panel-gaming" class="panel hidden">
+      <div class="gaming-grid" id="gaming-links"></div>
+      <div class="gaming-divider">MINI-GAME</div>
+      <div class="snake-container">
+        <div id="snake-status">Press PLAY to start</div>
+        <canvas id="snake-canvas" width="260" height="260"></canvas>
+        <div class="snake-controls">
+          <button id="btn-snake-play" class="snake-btn">▶ PLAY</button>
+          <span id="snake-score-display">Score: <b id="snake-score">0</b></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Settings Panel ── -->
+    <div id="panel-settings" class="panel hidden">
+      <div class="settings-section">
+        <div class="settings-label">SEARCH ENGINE</div>
+        <select id="setting-search-engine" class="settings-select">
+          <option value="https://google.com/search?q=">Google</option>
+          <option value="https://duckduckgo.com/?q=">DuckDuckGo</option>
+          <option value="https://search.brave.com/search?q=">Brave Search</option>
+          <option value="https://www.bing.com/search?q=">Bing</option>
+        </select>
+      </div>
+      <div class="settings-section">
+        <div class="settings-label">HOMEPAGE</div>
+        <input type="text" id="setting-homepage" class="settings-input" placeholder="https://...">
+      </div>
+      <div class="settings-section">
+        <div class="settings-label">THEME ACCENT</div>
+        <div class="accent-swatches" id="accent-swatches">
+          <div class="swatch active" data-color="#7c3aed" style="background:#7c3aed" title="Purple"></div>
+          <div class="swatch" data-color="#06b6d4" style="background:#06b6d4" title="Cyan"></div>
+          <div class="swatch" data-color="#10b981" style="background:#10b981" title="Green"></div>
+          <div class="swatch" data-color="#f59e0b" style="background:#f59e0b" title="Amber"></div>
+          <div class="swatch" data-color="#ef4444" style="background:#ef4444" title="Red"></div>
+          <div class="swatch" data-color="#ec4899" style="background:#ec4899" title="Pink"></div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-label">AUTO-UPDATE</div>
+        <div class="settings-sublabel">
+          Paste a URL to your <code>version.json</code> file.<br>
+          Format: <code>{"version":"1.1.0","url":"https://..."}</code>
+        </div>
+        <input type="text" id="setting-update-url" class="settings-input" placeholder="https://yourdomain.com/version.json">
+        <div class="update-row">
+          <button id="btn-check-update" class="settings-btn">🔍 Check for Updates</button>
+          <span id="app-version-label" class="version-label">v1.0.0</span>
+        </div>
+        <div id="update-status" class="update-status hidden"></div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-label">CHANGE PASSWORD</div>
+        <input type="password" id="setting-old-pwd"  class="settings-input" placeholder="Current password">
+        <input type="password" id="setting-new-pwd"  class="settings-input" placeholder="New password" style="margin-top:8px">
+        <input type="password" id="setting-conf-pwd" class="settings-input" placeholder="Confirm new password" style="margin-top:8px">
+        <button id="btn-change-pwd" class="settings-btn" style="margin-top:10px">Update Password</button>
+        <div id="pwd-change-msg" class="settings-msg hidden"></div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-label">KEYBOARD SHORTCUTS</div>
+        <div class="shortcuts-grid">
+          <span>Ctrl+T</span><span>New Tab</span>
+          <span>Ctrl+W</span><span>Close Tab</span>
+          <span>Ctrl+Shift+T</span><span>Reopen Tab</span>
+          <span>Ctrl+Tab</span><span>Next Tab</span>
+          <span>Ctrl+Shift+Tab</span><span>Prev Tab</span>
+          <span>Ctrl+L</span><span>Focus URL Bar</span>
+          <span>Ctrl+F</span><span>Find in Page</span>
+          <span>Ctrl+D</span><span>Bookmark</span>
+          <span>Ctrl+H</span><span>History</span>
+          <span>Ctrl+J</span><span>Clipboard</span>
+          <span>Ctrl+Shift+J</span><span>Downloads</span>
+          <span>Ctrl+= / Ctrl+-</span><span>Zoom In/Out</span>
+          <span>Ctrl+0</span><span>Reset Zoom</span>
+          <span>F5 / Ctrl+R</span><span>Reload</span>
+          <span>F11</span><span>Fullscreen</span>
+          <span>F12</span><span>DevTools</span>
+          <span>Alt+← / →</span><span>Back/Forward</span>
+          <span>Ctrl+1–9</span><span>Switch to Tab N</span>
+        </div>
+      </div>
+      <div class="settings-section">
+        <button id="btn-save-settings" class="settings-btn primary">SAVE SETTINGS</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     PASSWORD PROMPT MODAL (for protected panels)
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="pwd-modal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-icon">🔒</div>
+    <h3 class="modal-title" id="modal-title">PASSWORD REQUIRED</h3>
+    <p class="modal-desc" id="modal-desc">This area is protected.</p>
+    <input type="password" id="modal-input" class="modal-input" placeholder="Enter password…">
+    <div id="modal-error" class="modal-error hidden">⚠ Incorrect password</div>
+    <div class="modal-btns">
+      <button id="modal-cancel" class="modal-btn cancel">Cancel</button>
+      <button id="modal-confirm" class="modal-btn confirm">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     NOTIFICATION TOAST
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="toast" class="toast hidden"></div>
+
+<script src="renderer.js"></script>
+</body>
+</html>
